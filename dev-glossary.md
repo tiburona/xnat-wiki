@@ -1,0 +1,16 @@
+- ActiveMQ: a message broker. Message brokers are queues that hold requests. If you plan on running multiple instances of XNAT, ActiveMQ will dispatch requests to them.
+- container: an environment where an application can be run in isolation from the host machine, allowing you to make sure it has access to the files and resources it needs, and isn't affected by anything that could prevent it from running.
+- Docker: an application for running other applications in containers
+- docker compose: a command to create a Dockerized application comprised of multiple Docker containers. The containers each correspond to one service -- that is, one application (e.g., XNAT or Postgres).
+- git: a version control system that lets you track changes and authorship in code
+- gradle: a build tool. When you make changes to your files, it tracks what does and doesn't need to be recompiled, so you can get a compiled project faster. It builds jar and war files.
+- gradlew: stands for "gradle wrapper". gradlew runs gradle, and ensures that the correct version of gradle is the one executed.
+- jar file: stands for "Java archive". A zip file that contains the compiled elements of a Java application
+- localhost: a network address on your own computer. When doing web development, you can serve web applications on localhost rather than on the open web and see your own changes in the browser.
+- nginx: like Tomcat, a web server. In this context, nginx is being used as a web proxy -- it stands in between Tomcat and the web, receives requests, and provides services related to load balancing and security before passing those requests to Tomcat.
+- repo/repository: a directory that is under independent version control.
+- Postgres: a database application.
+- REST API: A system by which a client can make a request of the server, either getting information from the server or changing the state of information on the server. For instance a client can make a GET request for a list of XNAT users, and receive that list.
+- Swagger: Software that documents the REST API and provides a place to try out API requests in the browser.
+- Tomcat: a Java web server that runs your application, in this case, XNAT. It takes requests from the browser, passes them to XNAT's Java code, and when XNAT is done computing, passes a response back to the browser.
+- war file: stands for "web archive". A zip file that contains the elements of your application that Tomcat will serve to the browser (things like page templates, JavaScript, CSS, and images).
