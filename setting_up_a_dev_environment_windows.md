@@ -22,13 +22,21 @@ git clone https://github.com/NrgXnat/xnat-docker-compose.git
 
 Code snippets on this page are going to assume that all repositories are cloned in the same parent directory. Of course you don't have to do this, but if you don't, adjust any relative paths accordingly.
 
+Next inside the xnat-docker-compose directory, copy the default settings to a real .env file:
+
+```
+copy .\default.env .\.env
+```
+
+You can change the default settings later, but it's not necessary for quickly standing up a development environment.
+
 Now you come to a fork in the road: are you going to work on the core XNAT application or a plug-in?
 
 ![A fork in the road (from The Muppet Movie)](fork-in-the-road-upscaled-480.jpg)
 
 ### I'm going to work on code in the main repository
 
-1. After having pulled the xnat-docker-compose code you can check that you can run the container.  From the xnat-docker-compose directory, run
+1. After having pulled the xnat-docker-compose code you can check that you can run the container. From the xnat-docker-compose directory, run
 
 ```
 docker compose up --detach
@@ -56,11 +64,12 @@ Here's a highly abbreviated version of what your file tree looks like now, assum
 │   ├── build/
 │   ├── xnat-web/
 │   └──gradlew.bat      
-├── xnat-docker-compose/
-│   ├── xnat/
-│   │   ├── plugins/
-│   │   └── webapps/
-│   └── docker-compose.yml
+└── xnat-docker-compose/
+    ├── xnat/
+    │   ├── plugins/
+    │   └── webapps/
+    ├── default.env
+    └── docker-compose.yml
 ```
 
 3. Navigate to the top level of the xnat repository and build your war file:
@@ -69,7 +78,9 @@ Here's a highly abbreviated version of what your file tree looks like now, assum
 .\gradlew.bat :xnat-web:war
 ```
 
-4. Your war should have wound up at `<your-parent-directory>\xnat\xnat-web\build\libs\xnat-web-<version>.war`. Unpack it into the directory where Docker will look for it.  Navigate to the xnat-docker-compose directory.
+Note: since xnat-web is only one of many modules in the xnat monorepo, which comprises several, it's easy to get confused and think that the above command only compiles and bundles the xnat-web module. However, it also compiles and bundles every module that xnat-web depends on, which is most of them.
+
+4. Your war should have wound up at `<your-parent-directory>\xnat\xnat-web\build\libs\xnat-web-<version>.war`. Unpack it into the directory where Docker will look for it. Navigate to the xnat-docker-compose directory.
 
 ```
 Remove-Item -Recurse -Force xnat\webapps\ROOT -ErrorAction SilentlyContinue
@@ -90,7 +101,7 @@ services:
 
 Every time you make a change to the XNAT code and want to see your change in the running app, you need to return to steps 3 and 4 and build your war file and unpack it into the directory where Docker will look for it.
 
-6. Finally run
+6. Run
 
 ```
 docker compose up -d --force-recreate xnat-web
@@ -124,6 +135,7 @@ Let's take the Container Service as our example plugin. In order to work on Cont
 ```
 git clone https://github.com/NrgXnat/container-service.git
 ```
+
 This is a highly abbreviated version of what your file tree looks like now:
 
 ```
@@ -132,6 +144,7 @@ This is a highly abbreviated version of what your file tree looks like now:
 │   ├── xnat/
 │   │   ├── plugins/
 │   │   └── webapps/
+│   ├── default.env
 │   └── docker-compose.yml
 └── container-service/
     ├── build/
@@ -139,18 +152,21 @@ This is a highly abbreviated version of what your file tree looks like now:
     ├── src/
     └── gradlew.bat    
 ```
+
+Note: if you followed along with the first section of the page, you also have docker-compose.override.yml in your xnat-docker-compose directory. If you are not making changes to core XNAT code and don't need to rebuild, you may want to rename it docker-compose.override.yml.off (you can change it back later), because depending on your operating system it can slow down XNAT's startup process.
+
 2. Then navigate into your newly created container-service directory, use gradle to build the Container Service jar:
 
 ```
 .\gradlew.bat fatJar
 ```
 
-Your jar has landed in `<your-parent-directory>\container-service\build\libs\<container-service-version>-fat.jar`
+Your jar has landed in `<your-parent-directory>\container-service\build\libs\container-service-<version>-fat.jar`
 
 3. Now navigate to the xnat-docker-compose directory and run
 
 ```
-Copy-Item ..\container-service\build\libs\<container-service-version>-fat.jar .\xnat\plugins\
+Copy-Item ..\container-service\build\libs\<container-service-version>-fat.jar .\xnat\plugins
 ```
 
 4. Now you can start the Docker container:
@@ -159,11 +175,17 @@ Copy-Item ..\container-service\build\libs\<container-service-version>-fat.jar .\
 docker compose up --detach
 ```
 
+Or, if you already have a running container, run
+
+```
+docker compose restart xnat-web
+```
+
 For the Container Service in particular, you can check whether you've successfully installed your plugin by navigating to Administer -&gt; Plugin Settings on the site. If you see the Container Service, you've succeeded. For other plugins that may not have an obvious web front end, you can log in to XNAT in your browser and navigate to <http://localhost/xapi/plugins> and check that your plugin is listed in the response.
 
 If you are working on a plugin with a visible web frontend, just as with the main xnat web app, it's a useful test to check if you can make a change that is reflected in your local XNAT.
 
-For the Container Service, for instance, you can open this file: `<your-parent-directory>\container-service\src\main\resources\META-INF\xnat\spawner\containers\site-settings.yaml` and change a visible label. If you change the line `label: Compute Backend `in the file (around line 304) to `label: Baby Got Backend`, repeat steps 2 and 3 above (starting from the parent directory where you cloned the xnat-docker-compose and plugin repos), and restart the running Docker container with `docker compose restart xnat-web`, after about another minute and you should be able to see your change to the Container Service (or another plugin with a web front end).
+For the Container Service, for instance, you can open this file: `<your-parent-directory>\container-service\src\main\resources\META-INF\xnat\spawner\containers\site-settings.yaml` and change a visible label. If you change the line `label: Compute Backend `in the file (around line 304) to `label: Baby Got Backend`, repeat steps 2-4 above (starting from the parent directory where you cloned the xnat-docker-compose and plugin repos), and after about another minute and you should be able to see your change to the Container Service (or another plugin with a web front end).
 
 5. You may also want to see if you can run your plugin's tests as a final success criterion for setting up a development environment. The plugins vary widely in their test coverage and requirements for running tests, so an overview is out of scope here: check the documentation in each repository for details. For the container service you can run: `.\gradlew.bat unitTest` from inside the container-service directory. Your test results will be in `container-service\build\reports\tests\unitTest\index.html`.
 

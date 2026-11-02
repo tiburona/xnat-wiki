@@ -7,6 +7,7 @@
 - gradlew: stands for "gradle wrapper". gradlew runs gradle, and ensures that the correct version of gradle is the one executed.
 - jar file: stands for "Java archive". A zip file that contains the compiled elements of a Java application
 - localhost: a network address on your own computer. When doing web development, you can serve web applications on localhost rather than on the open web and see your own changes in the browser.
+- module: a group of related Java directories and files that can be distributed as a unit.
 - nginx: like Tomcat, a web server. In this context, nginx is being used as a web proxy -- it stands in between Tomcat and the web, receives requests, and provides services related to load balancing and security before passing those requests to Tomcat.
 - repo/repository: a directory that is under independent version control.
 - Postgres: a database application.
