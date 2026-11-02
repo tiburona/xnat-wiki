@@ -1,17 +1,27 @@
 - ActiveMQ: a message broker. Message brokers are queues that hold requests. If you plan on running multiple instances of XNAT, ActiveMQ will dispatch requests to them.
+- architecture (amd64 vs ARM64): the structure of the CPU chips in your computer. Operating systems and other applications must be compatible with your architecture. In the Docker context, when no image is available for your architecture, Docker can emulate the other architecture so you can still run the container.
+- class file: in the Java context, a file with the .class extension that contains compiled bytecode that can be executed on the Java Virtual Machine
 - container: an environment where an application can be run in isolation from the host machine, allowing you to make sure it has access to the files and resources it needs, and isn't affected by anything that could prevent it from running.
 - Docker: an application for running other applications in containers
-- docker compose: a command to create a Dockerized application comprised of multiple Docker containers. The containers each correspond to one service -- that is, one application (e.g., XNAT or Postgres).
+- docker compose: a command to create a Dockerized application comprised of multiple Docker containers. The containers each correspond to one application (e.g., XNAT or Postgres).
+- environment variables/.env: an .env file defines environment variables -- variables that are available to your operating system and to running applications.  They often concern things like credentials, identity of users, and important directories processes need to know.
 - git: a version control system that lets you track changes and authorship in code
 - gradle: a build tool. When you make changes to your files, it tracks what does and doesn't need to be recompiled, so you can get a compiled project faster. It builds jar and war files.
 - gradlew: stands for "gradle wrapper". gradlew runs gradle, and ensures that the correct version of gradle is the one executed.
+- image: in the Docker context, a file that Docker uses with an operating system and an application that can be run as a container. An image is the code for the application; the container is the running process.
 - jar file: stands for "Java archive". A zip file that contains the compiled elements of a Java application
+- JVM: stands for Java Virtual Machine. There are three levels of representation in Java: the Java the programmer writes, bytecode, which is what the Java compiler outputs, and machine code, which is what the computer understands. The JVM translates from bytecode to machine code. This allows Java to be platform-agnostic.
 - localhost: a network address on your own computer. When doing web development, you can serve web applications on localhost rather than on the open web and see your own changes in the browser.
-- module: a group of related Java directories and files that can be distributed as a unit.
+- monorepo: in XNAT terms, this refers to the core xnat repository. It gets called the monorepo because it subsumed code that used to have its own repo -- for example, various dicom utilities. (This can be a bit confusing because there is still more than one repo associated with the XNAT project.)
+- module: a group of related Java directories and files that can be distributed as a unit. It has its own build file, Gradle builds it separately, and it produces its own output (jar or war).
+- mount: In the Docker context, mounting a volume into a container binds it to a particular path in the container, so the files are available at that path.
 - nginx: like Tomcat, a web server. In this context, nginx is being used as a web proxy -- it stands in between Tomcat and the web, receives requests, and provides services related to load balancing and security before passing those requests to Tomcat.
-- repo/repository: a directory that is under independent version control.
+- plugin: in the context of the XNAT project, a plugin is code that: a) depends on core XNAT, but not vice versa, b) is released on a schedule independent of the core project's release schedule, and c) is discoverable in the webapp when its jar is put into the /plugins directory.
 - Postgres: a database application.
+- repo/repository: a directory that is under independent version control.
 - REST API: A system by which a client can make a request of the server, either getting information from the server or changing the state of information on the server. For instance a client can make a GET request for a list of XNAT users, and receive that list.
 - Swagger: Software that documents the REST API and provides a place to try out API requests in the browser.
 - Tomcat: a Java web server that runs your application, in this case, XNAT. It takes requests from the browser, passes them to XNAT's Java code, and when XNAT is done computing, passes a response back to the browser.
-- war file: stands for "web archive". A zip file that contains the elements of your application that Tomcat will serve to the browser (things like page templates, JavaScript, CSS, and images).
+- volume: in the Docker context, a directory from your computer that can be made available to a docker container by mounting it.  Because the directory belongs to your computer, the files in it will persist even when the container is destroyed.
+- war file: stands for "web archive". A zip file that contains the elements of your application that Tomcat will serve to the browser (things like compiled Java classes, library jars, page templates, JavaScript, and CSS).
+- YAML: a format for configuration files. Indentation carries meaning in YAML files; make sure you have the correct number of spaces for what you are trying to convey.
