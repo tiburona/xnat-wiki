@@ -12,11 +12,11 @@ Basic requirements and their installation instructions:
 - [Docker](https://www.docker.com/products/docker-desktop/)
 - [git](https://git-scm.com/install/)
 
-The easiest way to get an XNAT instance running in Docker is with [xnat-docker-compose](https://github.com/NrgXnat/xnat-docker-compose). Using this repo gives you a dockerized application that runs on Linux, comprised of several containers, including Tomcat+XNAT, Postgres (the XNAT database), and nginx (a web proxy). Postgres and nginx come from public images for those applications. The Tomcat+XNAT, on the other hand, is built and released by XNAT and distributed through the NrgXnat Github (you can see the most recent [here](https://github.com/nrgxnat/xnat/pkgs/container/xnat)). Instructions on how to assemble these containers into a coordinated project are provided to Docker through a file called docker-compose.yml, and the commands to start (or stop) the processes in this project begin with `docker compose`. The definition of a container in a Docker compose file is a "service." In many cases you will also need an override file (docker-compose.override.yml), which contains your local changes to the Docker setup. 
+The easiest way to get an XNAT instance running in Docker is with [xnat-docker-compose](https://github.com/NrgXnat/xnat-docker-compose). Using this repo gives you a dockerized application that runs on Linux, comprised of several containers, including Tomcat+XNAT, Postgres (the XNAT database), and nginx (a web proxy). Postgres and nginx come from public images for those applications. The Tomcat+XNAT, on the other hand, is built and released by XNAT and distributed through the NrgXnat Github (you can see the most recent [here](https://github.com/nrgxnat/xnat/pkgs/container/xnat)). Instructions on how to assemble these containers into a coordinated project are provided to Docker through a file called docker-compose.yml, and the commands to start (or stop) the processes in this project begin with `docker compose`. The definition of a container in a Docker compose file is a "service." In many cases you will also need an override file (docker-compose.override.yml), which contains your local changes to the Docker setup.
 
 As always, you're encouraged to look at the xnat-docker-compose [README.md](https://github.com/NrgXnat/xnat-docker-compose/blob/master/README.md) for more detailed setup information.
 
-First get the xnat-docker-compose source code. At the command line run:
+1. First get the xnat-docker-compose source code. At the command line run:
 
 ```
 git clone https://github.com/NrgXnat/xnat-docker-compose.git
@@ -24,7 +24,7 @@ git clone https://github.com/NrgXnat/xnat-docker-compose.git
 
 Code snippets on this page are going to assume that all repositories are cloned in the same parent directory. Of course you don't have to do this, but if you don't, adjust any relative paths accordingly.
 
-Next inside the xnat-docker-compose directory, copy the default settings to a real .env file:
+2. Next inside the xnat-docker-compose directory, copy the default settings to a real .env file:
 
 ```
 cp default.env .env
@@ -58,27 +58,31 @@ services:
 
 </details>
 
-But since you're not planning on simply *using* the XNAT setup out of the box, but rather making changes to source code, you'll want to see your changes to source code reflected in your local running XNAT instance, which requires some changes to the setup. The changes you'll have to make to the default setup will vary with what kind of development you're doing. If you're planning on making changes to code in the core xnat repo, you'll still use the Tomcat/XNAT container distributed by XNAT, but you will mount your local copy of the XNAT web application onto it. If you're only planning on making changes to a plugin, you will need to make your plugin jar available to the XNAT webapp.
-
-Now you come to a fork in the road: are you going to work on the core XNAT application or only a plug-in?
-
-![A fork in the road (from The Muppet Movie)](fork-in-the-road-upscaled-480.jpg)
-
-### I'm going to work on code in the main repository
-
-In this case you will need to obtain the xnat source code, build it into a war file, unpack it into a subdirectory within the xnat-docker-compose directory, and instruct the Docker compose process to mount that subdirectory into the container.
-
-1. After having pulled the xnat-docker-compose code you can check that you can run the container. From the xnat-docker-compose directory, run
+3. After having pulled the xnat-docker-compose code you can check that you can run the container. From the xnat-docker-compose directory, run
 
 ```
 docker compose up --detach
 ```
 
-You need to wait about a minute for the application to start up, but then you can go to <http://localhost> in a browser and log in to XNAT with the default credentials: admin/admin.
+You need to wait about a minute for the application to start up, but then you can go to <http://localhost> in a browser and log in to XNAT with the default credentials: admin/admin. To check the process, run
+
+```
+docker compose logs --follow xnat-web
+```
+
+and look for a line like `Server startup in [x] milliseconds`. Note that there's a similar line right at the beginning, `Server initialization in [x] milliseconds`, which does not indicate that your container is up and running. (Press `Ctrl-C` to exit the follow process.)
 
 If you get an error that suggests that the Docker daemon isn't running, that's because you need to start Docker. Assuming you downloaded and installed Docker desktop, just search for it on your computer and start it like you would any other application. (For other options for starting Docker, see [their documentation](https://docs.docker.com/engine/daemon/start/).)
 
-2. You also need to pull the xnat repo code. In your parent directory:
+But since you're not planning on simply *using* the XNAT setup out of the box, but rather making changes to source code, you'll want to see your changes to source code reflected in your local running XNAT instance, which requires some changes to the setup. The changes you'll have to make to the default setup will vary with what kind of development you're doing. If you're planning on making changes to code in the core xnat repo, you'll still use the Tomcat/XNAT container distributed by XNAT, but you will mount your local copy of the XNAT web application onto it. If you're only planning on making changes to a plugin, you will need to make your plugin jar available to the XNAT webapp.
+
+Now you come to a fork in the road: are you going to work on the core XNAT application or only a plug-in?
+
+### I'm going to work on code in the main repository
+
+In this case you will need to obtain the xnat source code, build it into a war file, unpack it into a subdirectory within the xnat-docker-compose directory, and instruct the Docker compose process to mount that subdirectory into the container.
+
+1. Pull the xnat repo code. In your parent directory:
 
 ```
 git clone https://github.com/NrgXnat/xnat.git
@@ -99,7 +103,7 @@ Here's a highly abbreviated version of what your file tree looks like now, assum
     └── docker-compose.yml
 ```
 
-3. Navigate to the top level of the xnat repository and build your war file:
+2. Navigate to the top level of the xnat repository and build your war file:
 
 ```
 ./gradlew :xnat-web:war
@@ -107,7 +111,7 @@ Here's a highly abbreviated version of what your file tree looks like now, assum
 
 Note: since xnat-web is only one of many modules in the xnat monorepo, it's easy to get confused and think that the above command only compiles and bundles the xnat-web module. However, it also compiles and bundles every module that xnat-web depends on, which is most of them.
 
-4. Your war should have wound up at `<your-parent-directory>/xnat/xnat-web/build/libs/xnat-web-<version>.war`. Unpack it into the directory where Docker will look for it. Navigate to the xnat-docker-compose directory.
+3. Your war should have wound up at `<your-parent-directory>/xnat/xnat-web/build/libs/xnat-web-<version>.war`. Unpack it into the directory where Docker will look for it. Navigate to the xnat-docker-compose directory.
 
 ```
 rm -rf xnat/webapps/ROOT 
@@ -117,7 +121,7 @@ unzip -q ../xnat/xnat-web/build/libs/xnat-web-<version>.war -d xnat/webapps/ROOT
 
 It may seem a little non-intuitive to have first packed your code into an archive, only to unpack it, but the Gradle build accomplishes more than just archive building: it compiles your files and assembles them into the layout that Tomcat expects. The compiled classes from xnat/xnat-web go in `WEB-INF/classes`, the other modules' jar files and jar files for third party libraries go in `WEB-INF/lib`, etc. You can inspect this layout by navigating to `xnat-docker-compose/xnat/webapps/ROOT` if you're curious.
 
-5. Instruct Docker to mount your web app files. Create a docker-compose override file: it should live next to `docker-compose.yml` in the top level of the xnat-docker-compose repository and be named `docker-compose.override.yml`.
+4. Instruct Docker to mount your web app files. Create a docker-compose override file: it should live next to `docker-compose.yml` in the top level of the xnat-docker-compose repository and be named `docker-compose.override.yml`.
 
 Add these lines to that file:
 
@@ -146,7 +150,7 @@ services:
 
 Finally you need to restart your container. Docker only reads your setup configuration on creating the container, and the XNAT web app only loads code into memory once, so any change to your code will require restarting the process for the result to take effect. This page uses the `force-recreate` flag to avoid any lingering effects of previous setups.
 
-6. Run
+5. Run
 
 ```
 docker compose up -d --force-recreate xnat-web
@@ -155,11 +159,11 @@ docker compose up -d --force-recreate xnat-web
 If you'd like to assure yourself that you have a working development environment and can see your work on your local XNAT, make a small symbolic change. In `<your-parent-directory>/xnat/xnat-web/src/main/webapp/xnat-templates/screens/Login.vm`, line 116 on the current develop branch, change the Login text in between the &lt;button&gt; tags, like so:
 `<button class="submit btn" id="loginButton" type="submit" name="login">Kenny Loggins</button>`
 
-Then repeat steps 3, 4, and 6, and after about a minute, check the login page at <http://localhost> for your change.
+Then repeat steps 2, 3, and 5, and after about a minute, check the login page at <http://localhost> for your change.
 
 A final thing you may want to do to make sure you have a development environment set up is run the tests in the main xnat repo.
 
-7. Navigate back to the main xnat repo and run
+6. Navigate back to the main xnat repo and run
 
 ```
 ./gradlew build
@@ -171,7 +175,7 @@ If your build successfully runs and tests pass, you have a working development e
 
 ### I'm going to work on plugin code outside of the main repository.
 
-There are two main differences between working on code in the main XNAT app and working on code for a plugin. For development on plugin code, you need to build the jar for the plugin any time you've made a change that you want to see live, and make sure that jar is in the right place. You don't necessarily need to build the XNAT war or make a docker-compose.override file. 
+There are two main differences between working on code in the main XNAT app and working on code for a plugin. For development on plugin code, you need to build the jar for the plugin any time you've made a change that you want to see live, and make sure that jar is in the right place. You don't necessarily need to build the XNAT war or make a docker-compose.override file.
 
 Let's take the Container Service as our example plugin. In order to work on Container Service development, of course you need the code for the Container Service, and in addition you need the running XNAT instance, just as you do for core XNAT development.
 
@@ -220,7 +224,7 @@ Your jar has landed in `<your-parent-directory>/container-service/build/libs/con
 cp ../container-service/build/libs/container-service-<version>-fat.jar ./xnat/plugins/
 ```
 
-4. Now you can start the Docker container.  As mentioned in the core XNAT development section, the force-recreate flag here is used to ensure you're starting a container fresh.
+4. Restart the Docker container. As mentioned in the core XNAT development section, the force-recreate flag here is used to ensure you're starting a container fresh. In this case it's necessary to incorporate the plugin to the running container.
 
 ```
 docker compose up --detach --force-recreate
@@ -233,5 +237,7 @@ If you are working on a plugin with a visible web frontend, just as with the mai
 For the Container Service, for instance, you can open this file: `<your-parent-directory>/container-service/src/main/resources/META-INF/xnat/spawner/containers/site-settings.yaml` and change a visible label. If you change the line `label: Compute Backend `in the file (around line 304) to `label: Baby Got Backend`, repeat steps 2 and 3 above (starting from the parent directory where you cloned the xnat-docker-compose and plugin repos), and restart the running Docker container with `docker compose up --detach --force-recreate`, after about another minute and you should be able to see your change to the Container Service (or another plugin with a web front end).
 
 5. You may also want to see if you can run your plugin's tests as a final success criterion for setting up a development environment. The plugins vary widely in their test coverage and requirements for running tests, so an overview is out of scope here: check the documentation in each repository for details. For the container service you can run: `./gradlew unitTest` from inside the container-service directory. Your test results will be in `container-service/build/reports/tests/unitTest/index.html`.
+
+Note: getting the Container Service to actually launch containers requires some extra setup. See the xnat-docker-compose [README](https://github.com/NrgXnat/xnat-docker-compose#notes-on-using-the-container-service) for more information.
 
 \* (There are other repositories, like xnat-rest-tests, that may have their own requirements; for those requirements and procedures you should see the repositories' own documentation on Github.)
