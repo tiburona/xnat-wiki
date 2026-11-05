@@ -64,15 +64,15 @@ services:
 docker compose up --detach
 ```
 
-You need to wait about a minute for the application to start up, but then you can go to <http://localhost> in a browser and log in to XNAT with the default credentials: admin/admin. To check the process, run
+You need to wait about a minute for the application to start up, but then you can go to <http://localhost> in a browser and log in to XNAT with the default credentials: admin/admin. The first time you log in, you'll get a page that asks you to choose your site settings; the defaults are fine.
+
+To check the process, run
 
 ```
 docker compose logs --follow xnat-web
 ```
 
 and look for a line like `Server startup in [x] milliseconds`. Note that there's a similar line right at the beginning, `Server initialization in [x] milliseconds`, which does not indicate that your container is up and running. (Press `Ctrl-C` to exit the follow process.)
-
-If you get an error that suggests that the Docker daemon isn't running, that's because you need to start Docker. Assuming you downloaded and installed Docker desktop, just search for it on your computer and start it like you would any other application. (For other options for starting Docker, see [their documentation](https://docs.docker.com/engine/daemon/start/).)
 
 But since you're not planning on simply *using* the XNAT setup out of the box, but rather making changes to source code, you'll want to see your changes to source code reflected in your local running XNAT instance, which requires some changes to the setup. The changes you'll have to make to the default setup will vary with what kind of development you're doing. If you're planning on making changes to code in the core xnat repo, you'll still use the Tomcat/XNAT container distributed by XNAT, but you will mount your local copy of the XNAT web application onto it. If you're only planning on making changes to a plugin, you will need to make your plugin jar available to the XNAT webapp.
 
@@ -241,3 +241,26 @@ For the Container Service, for instance, you can open this file: `<your-parent-d
 Note: getting the Container Service to actually launch containers requires some extra setup. See the xnat-docker-compose [README](https://github.com/NrgXnat/xnat-docker-compose#notes-on-using-the-container-service) for more information.
 
 \* (There are other repositories, like xnat-rest-tests, that may have their own requirements; for those requirements and procedures you should see the repositories' own documentation on Github.)
+
+### Troubleshooting
+
+- You ran `docker compose up` and got an error that said "no matching manifest for linux/arm64."
+  You may be on an Apple Silicon Mac or another computer with ARM64 architecture. You need to add lines to your docker compose override file to tell Docker to emulate AMD64 architecture (see above under "Notes for Apple Silicon users").
+
+- Docker gives you multiple warnings of the form "X variable is not set. Defaulting to a blank string." and then exits with the error `invalid reference format`.
+  You may have skipped the step where you copy the `default.env` file to .env (step 2 above, before the fork.)
+
+- You successfully started your Docker container, but when you run `docker ps` xnat-web appears as "unhealthy."
+  There could be multiple causes for this, but one possibility is that it's slow, especially if you're on an operating system other than Linux. Don't assume the process is broken.
+
+- localhost doesn't load.
+  If you are using your own XNAT war, did you accidentally skip the step where you unzipped the war file into the ROOT dir? Or did you unzip it into the wrong place?
+
+- You ran `docker compose restart` or `docker compose up -d` and don't see your changes.
+  Using `up` with the `--force-recreate` flag ensures that your edits are incorporated in the new running container.
+
+- You get an error that says the Docker daemon isn't running.
+  You need to start Docker. If you downloaded and installed Docker Desktop, just search for it on your computer and start it like you would any other application. Or if you're on Linux and not using Docker Desktop, `sudo service docker start`. (For other options for starting Docker, see [their documentation](https://docs.docker.com/engine/daemon/start/).)
+
+- `go-yaml load error in parser (while parsing a block mapping)` 
+  Something's likely wrong with your spacing in your docker-compose.override.yml file, or you're breaking another YAML rule.
